@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { SignUpValidation } from '@/lib/validation';
 import { Loader } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { createNewUser } from '@/lib/appwrite/api';
 
 const SignUpPage = () => {
     const isLoading = false;
@@ -21,8 +22,9 @@ const SignUpPage = () => {
         },
     });
 
-    function onSubmit(values: z.infer<typeof SignUpValidation>) {
-        console.log(values);
+    async function onSubmit(values: z.infer<typeof SignUpValidation>) {
+        const newUser = await createNewUser(values);
+        console.log(newUser);
     }
 
     return (
