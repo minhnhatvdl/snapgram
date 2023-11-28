@@ -46,3 +46,26 @@ export type INewUser = {
     username: string;
     password: string;
 };
+
+export type IUserDB = {
+    accountId: string;
+    name: string;
+    username: string;
+    email: string;
+    imageUrl: URL;
+};
+
+export type IUserLogin = {
+    email: string;
+    password: string;
+};
+
+export type IAuthContext = {
+    user: IUser;
+    isLoading: boolean;
+    isAuthenticated: boolean;
+    setUser: React.Dispatch<React.SetStateAction<IUser>>;
+    setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
+    checkAuthenticatedUser: () => Promise<boolean>;
+};

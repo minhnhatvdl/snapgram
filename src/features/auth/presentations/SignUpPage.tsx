@@ -6,11 +6,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { SignUpValidation } from '@/lib/validation';
 import { Loader } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createNewUser } from '@/lib/appwrite/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
+import { useCreateNewUser, useLoginUser } from '@/lib/react-query/queriesAndMutations';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const SignUpPage = () => {
-    const isLoading = false;
+    const { isPending: isCreatingNewUser, mutateAsync: createNewUser } = useCreateNewUser();
+    const { isPending: isLoginUser, mutateAsync: loginUser } = useLoginUser();
+    const { checkAuthenticatedUser } = useAuthContext();
+    const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof SignUpValidation>>({
         resolver: zodResolver(SignUpValidation),
@@ -24,7 +29,30 @@ const SignUpPage = () => {
 
     async function onSubmit(values: z.infer<typeof SignUpValidation>) {
         const newUser = await createNewUser(values);
-        console.log(newUser);
+        if (!newUser)
+            return toast({
+                variant: 'destructive',
+                title: 'Sign up failed. Please try again.',
+            });
+        const session = await loginUser({
+            email: values.email,
+            password: values.password,
+        });
+        if (!session)
+            return toast({
+                variant: 'destructive',
+                title: 'Sign up failed. Please try again.',
+            });
+        const isAuthenticatedUser = await checkAuthenticatedUser();
+        if (isAuthenticatedUser) {
+            form.reset();
+            navigate('/');
+        } else {
+            return toast({
+                variant: 'destructive',
+                title: 'Sign up failed. Please try again.',
+            });
+        }
     }
 
     return (
@@ -87,7 +115,7 @@ const SignUpPage = () => {
                         )}
                     />
                     <Button type='submit' className='shad-button_primary'>
-                        {isLoading ? (
+                        {isCreatingNewUser || isLoginUser ? (
                             <div className='flex-center gap-2'>
                                 <Loader /> Loading...{' '}
                             </div>

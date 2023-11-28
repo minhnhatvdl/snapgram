@@ -4,6 +4,7 @@ import HomePage from './features/home/presentations/HomePage';
 import SignInPage from './features/auth/presentations/SignInPage';
 import SignUpPage from './features/auth/presentations/SignUpPage';
 import AuthPage from './features/auth/presentations/AuthPage';
+import { Toaster } from './components/ui/toaster';
 
 const App = () => {
     return (
@@ -15,6 +16,7 @@ const App = () => {
                 </Route>
                 <Route index element={<HomePage />} />
             </Routes>
+            <Toaster />
         </main>
     );
 };

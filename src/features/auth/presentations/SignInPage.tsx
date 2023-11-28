@@ -6,23 +6,44 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { SignInValidation } from '@/lib/validation';
 import { Loader } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useLoginUser } from '@/lib/react-query/queriesAndMutations';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { toast } from '@/components/ui/use-toast';
 
 const SignInPage = () => {
-    const isLoading = false;
+    const { isPending: isLoginUser, mutateAsync: loginUser } = useLoginUser();
+    const { checkAuthenticatedUser } = useAuthContext();
+    const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof SignInValidation>>({
         resolver: zodResolver(SignInValidation),
         defaultValues: {
-            name: '',
-            username: '',
             email: '',
             password: '',
         },
     });
 
-    function onSubmit(values: z.infer<typeof SignInValidation>) {
-        console.log(values);
+    async function onSubmit(values: z.infer<typeof SignInValidation>) {
+        const session = await loginUser({
+            email: values.email,
+            password: values.password,
+        });
+        if (!session)
+            return toast({
+                variant: 'destructive',
+                title: 'Sign in failed. Please try again.',
+            });
+        const isAuthenticatedUser = await checkAuthenticatedUser();
+        if (isAuthenticatedUser) {
+            form.reset();
+            navigate('/');
+        } else {
+            return toast({
+                variant: 'destructive',
+                title: 'Sign in failed. Please try again.',
+            });
+        }
     }
 
     return (
@@ -32,32 +53,6 @@ const SignInPage = () => {
                 <h2 className='h2-bold pt-2'>Log in to your account</h2>
                 <p className='text-light-3 small-medium sm:base-regular'>Welcome back ! Please enter your details.</p>
                 <form onSubmit={form.handleSubmit(onSubmit)} className='flex flex-col gap-5 w-full mt-4'>
-                    <FormField
-                        control={form.control}
-                        name='name'
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Name</FormLabel>
-                                <FormControl>
-                                    <Input type='text' className='shad-input' {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name='username'
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Username</FormLabel>
-                                <FormControl>
-                                    <Input type='text' className='shad-input' {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
                     <FormField
                         control={form.control}
                         name='email'
@@ -85,7 +80,7 @@ const SignInPage = () => {
                         )}
                     />
                     <Button type='submit' className='shad-button_primary'>
-                        {isLoading ? (
+                        {isLoginUser ? (
                             <div className='flex-center gap-2'>
                                 <Loader /> Loading...{' '}
                             </div>
