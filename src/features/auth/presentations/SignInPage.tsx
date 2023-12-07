@@ -13,7 +13,7 @@ import { toast } from '@/components/ui/use-toast';
 
 const SignInPage = () => {
     const { isPending: isLoginUser, mutateAsync: loginUser } = useLoginUser();
-    const { checkAuthenticatedUser } = useAuthContext();
+    const { checkAuthenticatedUser, isLoading } = useAuthContext();
     const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof SignInValidation>>({
@@ -80,7 +80,7 @@ const SignInPage = () => {
                         )}
                     />
                     <Button type='submit' className='shad-button_primary'>
-                        {isLoginUser ? (
+                        {isLoginUser || isLoading ? (
                             <div className='flex-center gap-2'>
                                 <Loader /> Loading...{' '}
                             </div>

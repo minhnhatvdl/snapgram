@@ -50,3 +50,12 @@ export const getCurrentUser = async () => {
         throw error;
     }
 };
+
+export const logoutUser = async () => {
+    try {
+        const session = account.deleteSession('current');
+        return session;
+    } catch (error) {
+        throw error;
+    }
+};
